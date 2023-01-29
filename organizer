@@ -1,0 +1,12 @@
+import PySimpleGUI as sg
+
+layout = [[sg.Text("input genes here:")], [sg.Button("OK")]]
+
+window = sg.Window("Do you have cancer", layout, margins = (150, 250))
+
+while True:
+    event, values = window.read()
+    if event == "OK" or event == sg.WIN_CLOSED:
+        break
+
+window.close()

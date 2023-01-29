@@ -1,0 +1,67 @@
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+from sklearn import tree
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.metrics import classification_report
+from sklearn.metrics import confusion_matrix
+from sklearn.preprocessing import StandardScaler
+from sklearn.naive_bayes import GaussianNB
+
+
+from sklearn.ensemble import VotingClassifier
+
+import pandas as pd
+import numpy as np
+import seaborn as sns
+import matplotlib.pyplot as plt
+
+df = pd.read_excel(r'/Users/cjeong/Downloads/HD_SMMART_rawcount (2).xlsx')
+features = df[['TSPAN6', 'TNMD', 'DPM1', 'SCYL3', 'C1orf112', 'FGR', 'CFH', 'FUCA2', 'GCLC', 'NFYA', 'STPG1', 'NIPAL3', 'LAS1L', 'ENPP4', 'SEMA3F', 'CFTR', 'ANKIB1', 'CYP51A1', 'KRIT1', 'RAD52', 'MYH16', 'BAD', 'LAP3', 'CD99', 'NA', 'HS3ST1', 'AOC1', 'WNT16', 'HECW1', 'MAD1L1', 'LASP1', 'SNX11', 'TMEM176A', 'M6PR', 'KLHL13', 'CYP26B1', 'ICA1', 'DBNDD1', 'ALS2', 'CASP10', 'CFLAR', 'TFPI', 'NDUFAF7', 'RBM5', 'MTMR7', 'SLC7A2', 'ARF5', 'SARM1', 'POLDIP2', 'PLXND1', 'AK2', 'CD38', 'FKBP4', 'KDM1A', 'RBM6', 'CAMKK1', 'RECQL', 'VPS50', 'HSPB6', 'ARHGAP33', 'NDUFAB1', 'PDK4', 'SLC22A16', 'ZMYND10', 'ABCB5', 'ARX', 'SLC25A13', 'ST7', 'CDC27', 'SLC4A1', 'CALCR', 'HCCS', 'DVL2', 'PRSS22', 'UPF1', 'SKAP2', 'SLC25A5', 'MCUB', 'HOXA11', 'POLR2J', 'DHX33', 'MEOX1', 'THSD7A', 'LIG3', 'RPAP3', 'ACSM3', 'REXO5', 'CIAPIN1', 'SPPL2B', 'FAM214B', 'COPZ2', 'PRKAR2B', 'MSL3', 'CREBBP', 'TSPOAP1', 'MPO', 'PON1', 'GCFC2', 'WDR54', 'CROT', 'ABCB4', 'KMT2E', 'RHBDD2', 'SOX8' ,'IBTK', 'ZNF195', 'MYCBP2', 'FBXL3', 'ITGAL', 'PDK2', 'ITGA3', 'ZFX', 'LAMP2', 'ITGA2B', 'ASB4' ,'GDE1' , 'C19orf60', 'CRLF1','OSBPL7', 'TMEM98', 'YBX2', 'KRT33A', 'MAP3K14', 'ABCC8', 'CACNG3', 'TMEM132A' ,'AP2B1', 'TAC1', 'ZNF263', 'CX3CL1', 'SPATA20', 'CACNA1G', 'TNFRSF12A', 'DLX6', 'MAP3K9', 'RALA', 'BAIAP2L1', 'KDM7A', 'ETV1' ,'AGK', 'ALDH3B1', 'TTC22', 'PHTF2', 'CCL26', 'FARP2', 'USH1C', 'GGCT', 'DBF4', 'TBXA2R', 'IFRD1', 'LGALS14', 'COX10' ,'GTF2IRD1', 'PAF1', 'VPS41', 'ARHGAP44', 'ELAC2']].to_numpy()
+labels = df['Diagnosis'].to_numpy()
+
+X_train,X_test,y_train,y_test=train_test_split(features,labels,test_size=0.2)
+
+sc = StandardScaler()
+X_train = sc.fit_transform(X_train)
+X_test = sc.transform(X_test)
+
+naive_bayes = GaussianNB()
+naive_bayes.fit(X_train, y_train)
+naive_bayes_predicted = naive_bayes.predict(X_test)
+
+dtree = tree.DecisionTreeClassifier(criterion = "gini", max_depth = 6)
+dtree = dtree.fit(X_train, y_train)
+dtree_predicted = dtree.predict(X_test)
+
+knn = KNeighborsClassifier(n_neighbors = 15).fit(X_train, y_train)
+knn_predicted = knn.predict(X_test)
+
+svm = SVC(kernel = 'rbf', C = 0.01, gamma = 5, probability = True).fit(X_train, y_train)
+svm_predicted = svm.predict(X_test)
+
+dtree_accuracy = accuracy_score(y_test, dtree_predicted)
+knn_accuracy = accuracy_score(y_test, knn_predicted)
+svm_accuracy = accuracy_score(y_test, svm_predicted)
+naive_bayes_accuracy = accuracy_score(y_test, naive_bayes_predicted)
+
+if(max(dtree_accuracy, knn_accuracy, svm_accuracy, naive_bayes_accuracy) == dtree_accuracy):
+    confusion_matrix = pd.crosstab(y_test, dtree_predicted, rownames = ['Actual'], colnames = ['Predicted (Decision Tree)'])
+    print(classification_report(y_test, dtree_predicted))
+    print("best model : decision tree")
+elif(max(dtree_accuracy, knn_accuracy, svm_accuracy, naive_bayes_accuracy) == knn_accuracy):
+    confusion_matrix = pd.crosstab(y_test, knn_predicted, rownames = ['Actual'], colnames = ['Predicted (K-Nearest Neighbors)'])
+    print(classification_report(y_test, knn_predicted))
+    print("best model : k-nearest neighbors")
+elif(max(dtree_accuracy, knn_accuracy, svm_accuracy, naive_bayes_accuracy) == naive_bayes_accuracy):
+    confusion_matrix = pd.crosstab(y_test, naive_bayes_predicted, rownames = ['Actual'], colnames = ['Predicted (Naive_Bayes)'])
+    print(classification_report(y_test, naive_bayes_predicted))
+    print("best model: naive bayes algorithm")
+else:
+    confusion_matrix = pd.crosstab(y_test, svm_predicted, rownames = ['Actual'], colnames = ['Predicted (Support Vector Machine)'])
+    print(classification_report(y_test, svm_predicted))
+    print("best model: support vector machine")
+
+sns.heatmap(confusion_matrix, annot = True)
+plt.show()
